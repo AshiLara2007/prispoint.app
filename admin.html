@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ADMIN | PRISPOINT</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;800&display=swap" rel="stylesheet">
+    <style>
+        body { background: #000; color: #fff; font-family: 'Plus Jakarta Sans'; padding: 40px; overflow-x: hidden; }
+        
+        /* Initial states for animations */
+        .header-sec, .card, tr { opacity: 0; transform: translateY(20px); }
+        
+        .card { background: #0a0a0a; border: 1px solid #111; padding: 30px; border-radius: 24px; transition: 0.3s; }
+        .card:hover { border-color: #222; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 20px; }
+        
+        h1 { letter-spacing: 5px; font-weight: 800; font-size: 28px; }
+        h3 { color: #444; font-size: 11px; letter-spacing: 2px; margin-bottom: 20px; }
+        
+        input { 
+            background: #000; border: 1px solid #222; color: #fff; padding: 14px; 
+            width: 100%; border-radius: 12px; margin-bottom: 12px; outline: none; 
+            transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        input:focus { border-color: #fff; background: #050505; transform: scale(1.01); }
+        
+        .btn { 
+            background: #fff; color: #000; padding: 14px; border-radius: 12px; 
+            border: none; font-weight: 800; cursor: pointer; width: 100%; 
+            transition: 0.3s; margin-top: 10px;
+        }
+        .btn:hover { transform: scale(1.02); background: #eee; }
+        .btn:active { transform: scale(0.98); }
+        
+        table { width: 100%; border-collapse: collapse; }
+        td { padding: 15px 0; border-bottom: 1px solid #111; font-size: 14px; transition: 0.2s; }
+        tr:hover td { color: #fff; background: rgba(255,255,255,0.02); }
+
+        .back-link { color: #444; text-decoration: none; font-weight: 800; font-size: 12px; transition: 0.3s; }
+        .back-link:hover { color: #fff; }
+
+        /* Custom Scrollbar for backup list */
+        .scroll-area { max-height: 450px; overflow-y: auto; padding-right: 10px; }
+        .scroll-area::-webkit-scrollbar { width: 4px; }
+        .scroll-area::-webkit-scrollbar-thumb { background: #222; border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="header-sec" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:40px;">
+        <h1>ADMIN PANEL</h1>
+        <a href="/" class="back-link">← DASHBOARD</a>
+    </div>
+
+    <div class="grid">
+        <div class="card">
+            <h3>CREATE NEW NODE</h3>
+            <form method="POST">
+                <input type="hidden" name="act" value="add">
+                <input type="text" name="target" placeholder="USER ID" required autocomplete="off">
+                <input type="text" name="pw" placeholder="PASSWORD" required>
+                <input type="number" name="quota" placeholder="QUOTA (GB)" required>
+                <button type="submit" class="btn">INITIALIZE USER</button>
+            </form>
+
+            <h3 style="margin-top:40px;">ACTIVE NODES</h3>
+            <div class="scroll-area">
+                <table>
+                    {% for u in users %}
+                    <tr>
+                        <td style="font-weight:800;">{{ u.name|upper }}</td>
+                        <td style="color:#444;">{{ u.quota }} GB</td>
+                        <td style="text-align:right;">
+                            {% if u.name != 'admin' %}
+                            <form method="POST" style="display:inline;">
+                                <input type="hidden" name="act" value="rem">
+                                <input type="hidden" name="target" value="{{ u.name }}">
+                                <button style="background:none; border:none; color:#ff4d4d; cursor:pointer; font-weight:800; font-size:11px;">DELETE</button>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>BACKUP REPOSITORY</h3>
+            <div class="scroll-area">
+                <table>
+                    {% if not deleted_files %}
+                        <tr><td style="color:#222; text-align:center;">NO BACKUPS FOUND</td></tr>
+                    {% endif %}
+                    {% for f in deleted_files %}
+                    <tr>
+                        <td style="font-size: 11px; color: #444; font-family: monospace;">{{ f }}</td>
+                        <td style="text-align: right; min-width: 80px;">
+                            <a href="/admin/download_backup/{{ f }}" style="color:#fff; text-decoration:none; font-weight:800; margin-right:15px; font-size:16px;">↓</a>
+                            <a href="/admin/delete_backup/{{ f }}" style="color:#ff4d4d; text-decoration:none; font-weight:800; font-size:16px;">×</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            // Header animation
+            gsap.to(".header-sec", { opacity: 1, y: 0, duration: 1, ease: "power4.out" });
+            
+            // Cards stagger animation
+            gsap.to(".card", { 
+                opacity: 1, 
+                y: 0, 
+                duration: 1.2, 
+                stagger: 0.2, 
+                ease: "power4.out",
+                delay: 0.2 
+            });
+
+            // Table rows stagger animation
+            gsap.to("tr", { 
+                opacity: 1, 
+                y: 0, 
+                duration: 0.8, 
+                stagger: 0.05, 
+                delay: 0.5,
+                ease: "power2.out"
+            });
+        });
+    </script>
+</body>
+</html>
