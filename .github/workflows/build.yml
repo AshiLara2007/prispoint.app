@@ -1,0 +1,34 @@
+name: Build Windows App
+on: [push]
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Build Python Backend
+        run: |
+          pip install flask psutil pyinstaller
+          pyinstaller --noconsole --onefile --add-data "templates;templates" app.py
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install Dependencies and Build Electron
+        run: |
+          npm install
+          npm run build:win
+
+      - name: Upload Installer
+        uses: actions/upload-artifact@v3
+        with:
+          name: Windows-Installer
+          path: dist-app/*.exe
